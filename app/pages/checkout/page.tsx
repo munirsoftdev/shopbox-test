@@ -3,6 +3,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { useShop } from "../../context/shopContext";
+import Link from "next/link";
+import { FaArrowLeft } from "react-icons/fa";
 
 // Define the precise configuration structure for the Flutterwave overlay
 interface FlutterwaveConfig {
@@ -74,7 +76,7 @@ export default function CheckoutPage() {
 			customizations: {
 				title: "shopbox-test",
 				description: `Payment for ${cart.length} items`,
-				logo: "https://flutterwave.com",
+				logo: "shopBox.png",
 			},
 			callback: (response) => {
 				localStorage.setItem(
@@ -86,7 +88,6 @@ export default function CheckoutPage() {
 						customer: form,
 					}),
 				);
-
 				clearCart();
 				router.push(`/pages/order-success?ref=${response.tx_ref}`);
 			},
@@ -98,8 +99,18 @@ export default function CheckoutPage() {
 
 	return (
 		<div className="container mx-auto px-4 py-8 max-w-3xl">
+			<Link
+				href="/pages/cart"
+				className="inline-flex items-center gap-2 text-gray-600 hover:text-pink-600 mb-6 transition"
+			>
+				<FaArrowLeft size={16} />
+				<span className="text-sm font-medium">Go back</span>
+			</Link>
 			{/* 3. Inject optimized Flutterwave script asynchronously */}
-			<Script src="https://flutterwave.com" strategy="lazyOnload" />
+			<Script
+				src="https://checkout.flutterwave.com/v3.js"
+				strategy="afterInteractive"
+			/>
 
 			<h2 className="text-2xl font-bold mb-6">Checkout</h2>
 			<div className="grid md:grid-cols-2 gap-8">
@@ -186,7 +197,7 @@ export default function CheckoutPage() {
 					</div>
 					<button
 						onClick={pay}
-						className="w-full bg-blue-600 text-white py-3 rounded-lg mt-4 font-bold hover:bg-blue-700"
+						className="w-full bg-pink-600 text-white py-3 rounded-lg mt-4 font-bold hover:bg-pink-700"
 					>
 						Pay with Flutterwave
 					</button>
