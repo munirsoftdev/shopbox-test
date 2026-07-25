@@ -1,10 +1,11 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { FaCheckCircle } from "react-icons/fa";
 
-export default function OrderSuccessPage() {
+// 1. Move the original logic into a sub-component that handles the search parameters
+function OrderSuccessContent() {
 	const searchParams = useSearchParams();
 	const ref = searchParams.get("ref");
 	const [order, setOrder] = useState<any>(null);
@@ -83,5 +84,16 @@ export default function OrderSuccessPage() {
 				</Link>
 			</div>
 		</div>
+	);
+}
+
+// 2. Export the main page component wrapped in Suspense so Next.js ignores it during static pre-rendering
+export default function OrderSuccessPage() {
+	return (
+		<Suspense
+			fallback={<p className="text-center py-20">Loading order info...</p>}
+		>
+			<OrderSuccessContent />
+		</Suspense>
 	);
 }
