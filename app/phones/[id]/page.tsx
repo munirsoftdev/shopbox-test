@@ -3,10 +3,31 @@ import { useParams } from "next/navigation"; // to get the id from url
 import Image from "next/image";
 import { phones } from "../../data/phones"; // go up 3 levels
 import { useShop } from "../../context/shopContext";
-import { FaShoppingCart, FaStar } from "react-icons/fa";
+import {
+	FaShoppingCart,
+	FaStar,
+	FaStarHalfAlt,
+	FaRegStar,
+} from "react-icons/fa";
 import { useState } from "react";
 import Link from "next/link";
 import { FaArrowLeft } from "react-icons/fa";
+
+// Fixed StarRating component with half-star support
+const StarRating = ({ rating }: { rating: number }) => {
+	return (
+		<div className="flex">
+			{[...Array(5)].map((_, i) => {
+				const starValue = i + 1;
+				if (rating >= starValue)
+					return <FaStar key={i} className="text-yellow-400 text-sm" />;
+				if (rating >= starValue - 0.5)
+					return <FaStarHalfAlt key={i} className="text-yellow-400 text-sm" />;
+				return <FaRegStar key={i} className="text-gray-300 text-sm" />;
+			})}
+		</div>
+	);
+};
 
 export default function ProductDetailPage() {
 	const { id } = useParams(); // gets "iphone-15-pro" from url
@@ -46,7 +67,7 @@ export default function ProductDetailPage() {
 							src={product.image}
 							alt={product.title}
 							fill
-							preload={true}
+							priority={true} // FIX: Changed 'preload={true}' to valid Next.js 'priority={true}'
 							sizes="(max-width: 768px) 100vw, 50vw"
 							className="object-contain"
 						/>
@@ -54,15 +75,11 @@ export default function ProductDetailPage() {
 				</div>
 				{/* Right: Details */}
 				<div>
-					<span className="text-sm text-gray-500">{product.category}</span>
 					<h1 className="text-3xl font-bold mt-2">{product.title}</h1>
 
 					<div className="flex items-center gap-2 mt-2">
-						<div className="flex text-yellow-400">
-							{[...Array(5)].map((_, i) => (
-								<FaStar key={i} />
-							))}
-						</div>
+						{/* FIX: Replaced broken loop with working StarRating */}
+						<StarRating rating={product.rating} />
 						<span className="text-sm text-gray-500">({product.rating})</span>
 					</div>
 
@@ -77,37 +94,42 @@ export default function ProductDetailPage() {
 						</p>
 					</div>
 
-					<p className="text-gray-600 mb-4">{product.description}</p>
-
 					<span
-						className={`font-semibold ${product.countInStock > 0 ? "text-green-600" : "text-red-600"}`}
+						className={`font-semibold ${product.countInStock > 5 ? "text-green-600" : "text-red-600"}`}
 					>
 						{product.countInStock > 0 ?
-							`In Stock: ${product.countInStock}`
+							`In Stock: - ${product.countInStock}`
 						:	"Out of Stock"}
 					</span>
 
 					{/* Quantity Selector */}
-					<div className="flex items-center gap-4 my-4">
-						<span>Quantity:</span>
-						<div className="flex items-center border rounded">
-							<button
-								onClick={() => setQty(qty > 1 ? qty - 1 : 1)}
-								className="px-3 py-1"
-							>
-								-
-							</button>
-							<span className="px-4">{qty}</span>
-							<button onClick={() => setQty(qty + 1)} className="px-3 py-1">
-								+
-							</button>
+					{product.countInStock > 0 && (
+						<div className="flex items-center gap-4 my-4">
+							<span>Quantity:</span>
+							<div className="flex items-center border rounded">
+								<button
+									onClick={() => setQty(qty > 1 ? qty - 1 : 1)}
+									className="px-3 py-1 bg-gray-50 hover:bg-gray-100 transition"
+								>
+									-
+								</button>
+								<span className="px-4 font-medium">{qty}</span>
+								<button
+									onClick={() =>
+										setQty(qty < product.countInStock ? qty + 1 : qty)
+									} // FIX: Cannot select more than stock limit
+									className="px-3 py-1 bg-gray-50 hover:bg-gray-100 transition"
+								>
+									+
+								</button>
+							</div>
 						</div>
-					</div>
+					)}
 
 					<button
 						onClick={handleAddToCart}
 						disabled={product.countInStock === 0}
-						className="w-full bg-pink-700 text-white py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-pink-600 transition disabled:bg-gray-300"
+						className="w-full bg-pink-700 text-white py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-pink-600 transition disabled:bg-gray-300 disabled:cursor-not-allowed mt-4"
 					>
 						<FaShoppingCart /> Add to Cart
 					</button>

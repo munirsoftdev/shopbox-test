@@ -78,7 +78,7 @@ export default function Footer() {
 						<ul className="space-y-2 text-sm">
 							<li className="flex items-center gap-2">
 								<MdLocalShipping size={18} className="text-pink-500" />
-								<span>Free Shipping Over ₦50,000</span>
+								<span>Free Shipping Over 50,000</span>
 							</li>
 							<li className="flex items-center gap-2">
 								<MdSecurity size={18} className="text-pink-500" />

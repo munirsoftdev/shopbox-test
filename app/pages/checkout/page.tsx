@@ -40,6 +40,7 @@ declare global {
 export default function CheckoutPage() {
 	const { cart, cartTotal, clearCart } = useShop();
 	const router = useRouter();
+	const [loading, setLoading] = useState(false);
 
 	const [form, setForm] = useState({
 		fullName: "",
@@ -50,7 +51,14 @@ export default function CheckoutPage() {
 	});
 
 	const pay = () => {
-		if (!form.email || !form.fullName || !form.address) {
+		// FIX 1: Validate FIRST before triggering loading state lock
+		if (
+			!form.email ||
+			!form.fullName ||
+			!form.address ||
+			!form.phone ||
+			!form.city
+		) {
 			return alert("Please fill all delivery fields");
 		}
 
@@ -58,12 +66,14 @@ export default function CheckoutPage() {
 			return alert("Payment gateway is loading. Please try again in a moment.");
 		}
 
+		setLoading(true);
+
 		// 1. Generate unique reference safely inside your click event handler
 		const uniqueTxRef = `TM_${Date.now()}`;
 
 		// 2. Open Flutterwave using the native window handler instance
 		window.FlutterwaveCheckout({
-			public_key: process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY!,
+			public_key: process.env.NEXT_PUBLIC_FLW_PUBLIC_KEY || "",
 			tx_ref: uniqueTxRef,
 			amount: cartTotal + 2000,
 			currency: "NGN",
@@ -79,6 +89,7 @@ export default function CheckoutPage() {
 				logo: "shopBox.png",
 			},
 			callback: (response) => {
+				setLoading(false);
 				localStorage.setItem(
 					"lastOrder",
 					JSON.stringify({
@@ -92,7 +103,8 @@ export default function CheckoutPage() {
 				router.push(`/pages/order-success?ref=${response.tx_ref}`);
 			},
 			onclose: () => {
-				alert("Payment model closed by user.");
+				setLoading(false);
+				alert("Payment modal closed by user.");
 			},
 		});
 	};
@@ -106,6 +118,7 @@ export default function CheckoutPage() {
 				<FaArrowLeft size={16} />
 				<span className="text-sm font-medium">Go back</span>
 			</Link>
+
 			{/* 3. Inject optimized Flutterwave script asynchronously */}
 			<Script
 				src="https://checkout.flutterwave.com/v3.js"
@@ -195,11 +208,19 @@ export default function CheckoutPage() {
 							<span>₦{(cartTotal + 2000).toLocaleString()}</span>
 						</div>
 					</div>
+
+					{/* FIX 2 & 3: Clean flex wrapper spinner implementation */}
 					<button
 						onClick={pay}
-						className="w-full bg-pink-600 text-white py-3 rounded-lg mt-4 font-bold hover:bg-pink-700"
+						disabled={loading}
+						className="w-full bg-pink-600 text-white py-3 rounded-lg mt-4 font-bold hover:bg-pink-700 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
 					>
-						Pay with Flutterwave
+						{loading ?
+							<>
+								<div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+								<span>Processing...</span>
+							</>
+						:	`Pay with Flutterwave`}
 					</button>
 				</div>
 			</div>

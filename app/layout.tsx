@@ -4,6 +4,7 @@ import Header from "./component/Header";
 import Footer from "./component/Footer";
 import ScrollToTop from "./component/ScrollToTop";
 import { ShopProvider } from "./context/shopContext";
+import LayoutClientWrapper from "./component/LayoutClientWrapper";
 
 export const metadata: Metadata = {
 	title: "ShopBox",
@@ -22,9 +23,11 @@ export default function RootLayout({
 			<body className="min-h-full flex flex-col">
 				<ShopProvider>
 					<Header />
-					<ScrollToTop />
-					<main className="flex-1">{children}</main>
-					<Footer />
+					<LayoutClientWrapper>
+						<ScrollToTop />
+						<main className="flex-1">{children}</main>
+						<Footer />
+					</LayoutClientWrapper>
 				</ShopProvider>
 			</body>
 		</html>
