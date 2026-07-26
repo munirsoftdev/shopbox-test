@@ -26,7 +26,7 @@ export default function Header() {
 		e.preventDefault();
 		if (search) {
 			// ✅ USE GLOBAL SEARCH
-			router.push(`/search?q=${encodeURIComponent(search)}`);
+			router.push(`/pages/search?q=${encodeURIComponent(search)}`);
 			setMobileOpen(false);
 		}
 	};
